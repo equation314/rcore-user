@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -9,6 +10,21 @@
 #include <rvm.h>
 
 const int GUEST_MEM_SZ = 16 * 1024 * 1024; // 16 MiB
+const int GUEST_ENTRY_POINT = 0x8000;
+
+void test_hypercall() {
+    for (int i = 0;; i++) {
+        asm volatile (
+            "vmcall"
+            :
+            : "a"(i),
+              "b"(2),
+              "c"(3),
+              "d"(3),
+              "S"(3)
+            : "memory");
+    }
+}
 
 int main()
 {
@@ -18,36 +34,25 @@ int main()
     int vmid = ioctl(fd, RVM_GUEST_CREATE, GUEST_MEM_SZ);
     printf("vmid = %d\n", vmid);
 
-    void *guest_phys_mem_ptr = ioctl(fd, RVM_GUEST_ACCESS_MEMORY, vmid);
+    void *guest_phys_mem_ptr = (void *)(intptr_t)ioctl(fd, RVM_GUEST_ACCESS_MEMORY, vmid);
     printf("guest_phys_mem_ptr = %p\n", guest_phys_mem_ptr);
 
-    {
-        int* mem_test = (int*)guest_phys_mem_ptr;
-        for (int i = 0; i < 100; i ++) {
-            mem_test[i] = i;
-        }
-        int error = 0;
-        for (int i = 0; i < 100; i ++) {
-            if (mem_test[i] != i) {
-                printf("mem test failed\n");
-                error = 1;
-                break;
-            }
-        }
-        if (!error) {
-            printf("mem test success\n");
-        }
-    }
+    if (guest_phys_mem_ptr == (void *)-1)
+        return 0;
 
-    struct rvm_vcpu_create_args args = {vmid, 0x8000};
+    memcpy((char *)guest_phys_mem_ptr + GUEST_ENTRY_POINT, (char *)test_hypercall, 0x100);
+
+    struct rvm_vcpu_create_args args = {vmid, GUEST_ENTRY_POINT};
     int vcpu_id = ioctl(fd, RVM_VCPU_CREATE, &args);
 
     printf("vcpu_id = %d\n", vcpu_id);
 
-    // void *guest_phys_mem_ptr = mmap(0, GUEST_MEM_SZ, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    // printf("guest_phys_mem_ptr = %p\n", guest_phys_mem_ptr);
-    // if (guest_phys_mem_ptr != (void*)-1)
-    //     munmap(guest_phys_mem_ptr, GUEST_MEM_SZ);
+    for (;;) {
+        int ret = ioctl(fd, RVM_VCPU_RESUME, vcpu_id);
+        printf("RVM_VCPU_RESUME returns %d\n", ret);
+        break;
+    }
+
     close(fd);
     return 0;
 }
