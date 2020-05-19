@@ -6,7 +6,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "")
 # Path
 aux_source_directory(src SRCS)
 include_directories(src/include)
-set(EXECUTABLE_OUTPUT_PATH ${ARCH})
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${ARCH})
 
 # Toolchain
 set(PREFIX ${ARCH}-linux-musl-)
@@ -37,3 +37,5 @@ foreach (PATH ${SRCS})
     get_filename_component(NAME ${PATH} NAME_WE)
     add_executable(${NAME} ${PATH})
 endforeach ()
+
+add_subdirectory(src/vmm)
