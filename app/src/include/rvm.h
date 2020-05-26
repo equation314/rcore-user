@@ -10,6 +10,7 @@
 #define RVM_GUEST_SET_TRAP (RVM_IO + 0x03)
 #define RVM_VCPU_CREATE (RVM_IO + 0x11)
 #define RVM_VCPU_RESUME (RVM_IO + 0x12)
+#define RVM_VCPU_WRITE_STATE (RVM_IO + 0x13)
 
 enum rvm_trap_kind {
     RVM_TRAP_KIND_MEM = 1,
@@ -78,6 +79,11 @@ struct rvm_vcpu_create_args {
 struct rvm_vcpu_resmue_args {
     uint16_t vcpu_id;
     struct rvm_exit_packet packet;
+};
+
+struct rvm_vcpu_write_state_args {
+    uint16_t vcpu_id;
+    uint64_t rax;
 };
 
 #endif // RVM_H
