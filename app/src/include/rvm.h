@@ -11,6 +11,7 @@
 #define RVM_VCPU_CREATE (RVM_IO + 0x11)
 #define RVM_VCPU_RESUME (RVM_IO + 0x12)
 #define RVM_VCPU_WRITE_STATE (RVM_IO + 0x13)
+#define RVM_VCPU_WRITE_INPUT_VALUE (RVM_IO + 0x14)
 
 enum rvm_trap_kind {
     RVM_TRAP_KIND_MEM = 1,
@@ -84,6 +85,17 @@ struct rvm_vcpu_resmue_args {
 struct rvm_vcpu_write_state_args {
     uint16_t vcpu_id;
     uint64_t rax;
+};
+
+struct rvm_vcpu_input_value_args {
+    uint16_t vcpu_id;
+    uint8_t access_size;
+    union {
+        uint8_t u8;
+        uint16_t u16;
+        uint32_t u32;
+        uint8_t buf[4];
+    };
 };
 
 #endif // RVM_H
