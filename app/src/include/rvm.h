@@ -24,26 +24,19 @@ enum rvm_exit_packet_kind {
     RVM_EXIT_PKT_KIND_GUEST_VCPU = 3,
 };
 
-struct rvm_io_value {
-    uint8_t access_size;
-    union {
-        uint8_t u8;
-        uint16_t u16;
-        uint32_t u32;
-        uint8_t buf[4];
-    };
+union rvm_io_value {
+    uint8_t u8;
+    uint16_t u16;
+    uint32_t u32;
+    uint8_t buf[4];
 };
 
 struct rvm_exit_io_packet {
     uint16_t port;
     uint8_t access_size;
     bool is_input;
-    union {
-        uint8_t u8;
-        uint16_t u16;
-        uint32_t u32;
-        uint8_t buf[4];
-    };
+    uint8_t value_cnt;
+    union rvm_io_value values[32];
 };
 
 struct rvm_exit_mmio_packet {
@@ -90,12 +83,8 @@ struct rvm_vcpu_write_state_args {
 struct rvm_vcpu_input_value_args {
     uint16_t vcpu_id;
     uint8_t access_size;
-    union {
-        uint8_t u8;
-        uint16_t u16;
-        uint32_t u32;
-        uint8_t buf[4];
-    };
+    uint8_t value_cnt;
+    union rvm_io_value values[32];
 };
 
 #endif // RVM_H
