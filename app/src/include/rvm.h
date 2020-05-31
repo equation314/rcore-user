@@ -11,7 +11,7 @@
 #define RVM_VCPU_CREATE (RVM_IO + 0x11)
 #define RVM_VCPU_RESUME (RVM_IO + 0x12)
 #define RVM_VCPU_WRITE_STATE (RVM_IO + 0x13)
-#define RVM_VCPU_WRITE_INPUT_VALUE (RVM_IO + 0x14)
+#define RVM_VCPU_READ_STATE (RVM_IO + 0x14)
 
 enum rvm_trap_kind {
     RVM_TRAP_KIND_MEM = 1,
@@ -35,8 +35,8 @@ struct rvm_exit_io_packet {
     uint16_t port;
     uint8_t access_size;
     bool is_input;
-    uint8_t value_cnt;
-    union rvm_io_value values[32];
+    bool is_string;
+    bool is_repeat;
 };
 
 struct rvm_exit_mmio_packet {
@@ -75,16 +75,27 @@ struct rvm_vcpu_resmue_args {
     struct rvm_exit_packet packet;
 };
 
-struct rvm_vcpu_write_state_args {
-    uint16_t vcpu_id;
+struct rvm_guest_state {
     uint64_t rax;
+    uint64_t rcx;
+    uint64_t rdx;
+    uint64_t rbx;
+    uint64_t rbp;
+    uint64_t rsi;
+    uint64_t rdi;
+    uint64_t r8;
+    uint64_t r9;
+    uint64_t r10;
+    uint64_t r11;
+    uint64_t r12;
+    uint64_t r13;
+    uint64_t r14;
+    uint64_t r15;
 };
 
-struct rvm_vcpu_input_value_args {
+struct rvm_vcpu_state_args {
     uint16_t vcpu_id;
-    uint8_t access_size;
-    uint8_t value_cnt;
-    union rvm_io_value values[32];
+    struct rvm_guest_state guest_state;
 };
 
 #endif // RVM_H
