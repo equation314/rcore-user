@@ -12,6 +12,7 @@
 #define RVM_VCPU_RESUME (RVM_IO + 0x12)
 #define RVM_VCPU_WRITE_STATE (RVM_IO + 0x13)
 #define RVM_VCPU_READ_STATE (RVM_IO + 0x14)
+#define RVM_VCPU_INTERRUPT (RVM_IO + 0x15)
 
 enum rvm_trap_kind {
     RVM_TRAP_KIND_MEM = 1,
@@ -19,6 +20,7 @@ enum rvm_trap_kind {
 };
 
 enum rvm_exit_packet_kind {
+    RVM_EXIT_PKT_KIND_NONE = 0,
     RVM_EXIT_PKT_KIND_GUEST_IO = 1,
     RVM_EXIT_PKT_KIND_GUEST_MMIO = 2,
     RVM_EXIT_PKT_KIND_GUEST_VCPU = 3,
@@ -96,6 +98,11 @@ struct rvm_guest_state {
 struct rvm_vcpu_state_args {
     uint16_t vcpu_id;
     struct rvm_guest_state guest_state;
+};
+
+struct rvm_vcpu_tnterrupt_args {
+    uint16_t vcpu_id;
+    uint32_t vector;
 };
 
 #endif // RVM_H
